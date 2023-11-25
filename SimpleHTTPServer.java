@@ -5,6 +5,8 @@ import java.nio.file.Paths;
 import java.io.*;
 import java.util.*;
 
+import javax.sound.midi.SysexMessage;
+
 public class SimpleHTTPServer extends Thread {
     private Socket clientSocket;
     private OutputStream out;
@@ -33,48 +35,42 @@ public class SimpleHTTPServer extends Thread {
         PrintWriter writer = new PrintWriter(out, true);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
-        /*
-         * try {
-         * writer.println("HTTP/1.1 303 See Other");
-         * writer.println("Location: http://localhost:2234/test.html");
-         * } catch (Exception e) {
-         * }
-         */
-        boolean initialisation = true;
-        try {
-            List<String> data = Files.readAllLines(Paths.get("test.html"));
-
-            Integer length = 0;
-            for (int i = 0; i < data.size(); i++) {
-                length += data.get(i).length();
-            }
-            while (true) {
+        while (true) {
+            try {
                 String line;
-
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
                     if (line.equals("GET /test.html HTTP/1.1"))
-                        writer.println("HTTP/1.1 200 OK");
-                    writer.println("Content-Type: text/html");
-                    writer.println("Content-Length: " + length);
-                    writer.println(""); // Empty line to indicate the end of headers
-                    for (int i = 0; i < data.size(); i++) {
-                        writer.println(data.get(i));
-                    }
-                    if (line.isEmpty()) {
-                        break;
-                    }
+                        handlePageInitialization(writer);
+                    if (line.equals("GET / HTTP/1.1"))
+                        handlePageRedirection(writer);
                 }
-                if (initialisation) {
-                    System.out.println("J'ai repondu");
-                    writer.println("HTTP/1.1 303 See Other");
-                    writer.println("Location: /test.html");
-
-                    initialisation = false;
-                }
+            } catch (Exception e) {
             }
-        } catch (Exception e) {
         }
+    }
+
+    private void handlePageInitialization(PrintWriter writer) throws IOException {
+        List<String> data = Files.readAllLines(Paths.get("test.html"));
+        Integer length = 0;
+        for (int i = 0; i < data.size(); i++) {
+            length += data.get(i).length();
+        }
+
+        writer.println("HTTP/1.1 200 OK");
+        writer.println("Content-Type: text/html");
+        writer.println("Content-Length: " + length);
+        writer.println(); // Empty line to indicate the end of headers
+        for (int i = 0; i < data.size(); i++) {
+            writer.println(data.get(i));
+        }
+    }
+
+    private void handlePageRedirection(PrintWriter writer) {
+        writer.println("HTTP/1.1 303 See Other");
+        writer.println("Location: /test.html");
+        writer.println();
+        System.out.println("REDIRECTION");
     }
 
     public String manageRequest(String query) throws IOException {
