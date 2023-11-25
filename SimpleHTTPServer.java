@@ -5,8 +5,6 @@ import java.nio.file.Paths;
 import java.io.*;
 import java.util.*;
 
-import javax.sound.midi.SysexMessage;
-
 public class SimpleHTTPServer extends Thread {
     private Socket clientSocket;
     private OutputStream out;
@@ -39,31 +37,53 @@ public class SimpleHTTPServer extends Thread {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                    if (line.equals("GET /test.html HTTP/1.1"))
-                        handlePageInitialization(writer);
-                    if (line.equals("GET / HTTP/1.1"))
-                        handlePageRedirection(writer);
+                    // System.out.println(line);
+                    // Deal with GET method
+                    if (line.startsWith("GET"))
+                        GETReply(line, writer);
                 }
             } catch (Exception e) {
             }
         }
     }
 
-    private void handlePageInitialization(PrintWriter writer) throws IOException {
-        List<String> data = Files.readAllLines(Paths.get("test.html"));
+    private void GETReply(String query, PrintWriter writer) throws IOException {
+        System.out.println(query);
+        if (query.equals("GET / HTTP/1.1") || query.equals("GET HTTP/1.1")) {
+            handlePageRedirection(writer);
+            return;
+        }
+        query = query.replace("GET /", "");
+        System.out.println(query);
+        String type = null;
+
+        // if(query.contains(".png")){
+        // IDK HOW TO DEAL WITH PNG
+        // }
+
+        if (query.contains(".html"))
+            type = "text/html";
+        if (query.contains(".css"))
+            type = "text/css";
+        if (query.contains(".js"))
+            type = "script/js";
+        List<String> data = Files.readAllLines(Paths.get(query.replace(" HTTP/1.1", "")));
         Integer length = 0;
         for (int i = 0; i < data.size(); i++) {
             length += data.get(i).length();
-        }
 
+        }
+        System.out.println(type);
         writer.println("HTTP/1.1 200 OK");
-        writer.println("Content-Type: text/html");
+        writer.println("Content-Type: " + type);
         writer.println("Content-Length: " + length);
         writer.println(); // Empty line to indicate the end of headers
         for (int i = 0; i < data.size(); i++) {
+            System.out.println(data.get(i));
             writer.println(data.get(i));
         }
+        System.out.println("i");
+
     }
 
     private void handlePageRedirection(PrintWriter writer) {
