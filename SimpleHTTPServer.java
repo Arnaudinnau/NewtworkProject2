@@ -1,9 +1,9 @@
 import java.io.*;
 import java.net.*;
-import java.nio.file.*;;
 import java.nio.file.*;
-import java.io.*;
 import java.util.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 public class SimpleHTTPServer extends Thread {
     private Socket clientSocket;
@@ -37,7 +37,7 @@ public class SimpleHTTPServer extends Thread {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
+                    // System.out.println(line);
                     // Deal with GET method
                     if (line.startsWith("GET"))
                         GETReply(line, writer);
@@ -53,11 +53,32 @@ public class SimpleHTTPServer extends Thread {
             return;
         }
         query = query.replace("GET /", "");
+
+        Path filePath = Paths.get(query.replace(" HTTP/1.1", ""));
+        if (!Files.exists(filePath)) {
+            writer.println("HTTP/1.1 404 Not Found");
+            writer.println();
+            return;
+        }
+
         String type = null;
 
-        // if(query.contains(".png")){
-        // IDK HOW TO DEAL WITH PNG
-        // }
+        if (query.contains(".png")) {
+            File file = new File(filePath.toString());
+            BufferedImage image = ImageIO.read(file);
+            final ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", os);
+            String s = Base64.getEncoder().encodeToString(os.toByteArray());
+            String htmlImage = "<img src =\"data:" + filePath.toString().replace(".png", "") + "/png;base64," + s
+                    + "\"/>";
+            System.out.println(htmlImage);
+            writer.println("HTTP/1.1 200 OK");
+            writer.println("Content-Type: " + "text/html");
+            writer.println("Content-Length: " + htmlImage.length());
+            writer.println();
+            writer.println(htmlImage);
+            return;
+        }
 
         if (query.contains(".html"))
             type = "text/html";
@@ -66,13 +87,7 @@ public class SimpleHTTPServer extends Thread {
         if (query.contains(".js"))
             type = "script/js";
 
-        Path filePath = Paths.get(query.replace(" HTTP/1.1", ""));
-        if (!Files.exists(filePath)) {
-            writer.println("HTTP/1.1 404 Not Found");
-            writer.println();
-            return;
-
-        }
+        System.out.println(query);
         byte[] fileData = Files.readAllBytes(filePath);
 
         writer.println("HTTP/1.1 200 OK");
