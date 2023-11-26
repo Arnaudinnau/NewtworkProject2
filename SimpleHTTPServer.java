@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.*;;
+import java.nio.file.*;
 import java.io.*;
 import java.util.*;
 
@@ -37,7 +37,7 @@ public class SimpleHTTPServer extends Thread {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // System.out.println(line);
+                    System.out.println(line);
                     // Deal with GET method
                     if (line.startsWith("GET"))
                         GETReply(line, writer);
@@ -48,13 +48,11 @@ public class SimpleHTTPServer extends Thread {
     }
 
     private void GETReply(String query, PrintWriter writer) throws IOException {
-        System.out.println(query);
         if (query.equals("GET / HTTP/1.1") || query.equals("GET HTTP/1.1")) {
-            handlePageRedirection(writer);
+            handlePageRedirection(writer, "/test.html");
             return;
         }
         query = query.replace("GET /", "");
-        System.out.println(query);
         String type = null;
 
         // if(query.contains(".png")){
@@ -67,30 +65,36 @@ public class SimpleHTTPServer extends Thread {
             type = "text/css";
         if (query.contains(".js"))
             type = "script/js";
-        List<String> data = Files.readAllLines(Paths.get(query.replace(" HTTP/1.1", "")));
-        Integer length = 0;
-        for (int i = 0; i < data.size(); i++) {
-            length += data.get(i).length();
+
+        Path filePath = Paths.get(query.replace(" HTTP/1.1", ""));
+        if (!Files.exists(filePath)) {
+            writer.println("HTTP/1.1 404 Not Found");
+            writer.println();
+            return;
 
         }
-        System.out.println(type);
+        byte[] fileData = Files.readAllBytes(filePath);
+
         writer.println("HTTP/1.1 200 OK");
         writer.println("Content-Type: " + type);
-        writer.println("Content-Length: " + length);
+        writer.println("Transfer-Encoding: chunked");
         writer.println(); // Empty line to indicate the end of headers
-        for (int i = 0; i < data.size(); i++) {
-            System.out.println(data.get(i));
-            writer.println(data.get(i));
-        }
-        System.out.println("i");
 
+        int chunkSize = 128; // Maximum ChunckSize
+        for (int i = 0; i < fileData.length; i += chunkSize) {
+            int chunkLength = Math.min(chunkSize, fileData.length - i);
+            writer.println(Integer.toHexString(chunkLength)); // Chunk size in hexadecimal
+            writer.println(new String(fileData, i, chunkLength));
+        }
+
+        writer.println("0");
+        writer.println(); // Empty line to signal the end of chunks
     }
 
-    private void handlePageRedirection(PrintWriter writer) {
+    private void handlePageRedirection(PrintWriter writer, String path) {
         writer.println("HTTP/1.1 303 See Other");
-        writer.println("Location: /test.html");
+        writer.println("Location: " + path);
         writer.println();
-        System.out.println("REDIRECTION");
     }
 
     public String manageRequest(String query) throws IOException {
