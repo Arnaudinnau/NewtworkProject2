@@ -1,14 +1,13 @@
-
 import java.io.*;
 import java.net.*;
 
-public class JavaSimpleHTTP {
+public class WordleServer {
     private ServerSocket serverSocket;
-    private final static int port = 2234;
+    private final static int port = 8020;
     private Integer n = 5;
     private Integer maxThread;
 
-    public JavaSimpleHTTP() throws IOException {
+    public WordleServer() throws IOException {
         this.serverSocket = new ServerSocket(port);
         // this.n = 0;
         // this.maxThread = Integer.parseInt(arg);
@@ -17,7 +16,7 @@ public class JavaSimpleHTTP {
 
     public static void main(String[] args) {
         try {
-            JavaSimpleHTTP wordleServer = new JavaSimpleHTTP();
+            WordleServer wordleServer = new WordleServer();
             wordleServer.startServer();
         } catch (IOException ex) {
             System.out.println("Server Exception: " + ex.getMessage());
@@ -28,18 +27,18 @@ public class JavaSimpleHTTP {
         try {
             while (true) {
                 /**
-                if (maxThread == 0) {
-                    wait();
-                }
-                synchronized (maxThread) {
-                    maxThread--;
-                    notifyAll();
-                }
-                */
+                 * if (maxThread == 0) {
+                 * wait();
+                 * }
+                 * synchronized (maxThread) {
+                 * maxThread--;
+                 * notifyAll();
+                 * }
+                 */
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New Client connected (" + n.toString() + ") : " + clientSocket.getInetAddress());
-                Thread SimpleHTTPServer = new SimpleHTTPServer(clientSocket);
-                SimpleHTTPServer.start();
+                Thread ClientHandler = new ClientHandler(clientSocket);
+                ClientHandler.start();
             }
         } catch (Exception ex) {
             System.out.println("Server exception: " + ex.getMessage());
