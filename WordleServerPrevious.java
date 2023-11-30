@@ -1,13 +1,13 @@
 import java.io.*;
 import java.net.*;
 
-public class WordleServer {
+public class WordleServerPrevious {
     private ServerSocket serverSocket;
     private final static int port = 8020;
     private Integer n = 5;
     private Integer maxThread;
 
-    public WordleServer() throws IOException {
+    public WordleServerPrevious() throws IOException {
         this.serverSocket = new ServerSocket(port);
         // this.n = 0;
         // this.maxThread = Integer.parseInt(arg);
@@ -16,7 +16,7 @@ public class WordleServer {
 
     public static void main(String[] args) {
         try {
-            WordleServer wordleServer = new WordleServer();
+            WordleServerPrevious wordleServer = new WordleServerPrevious();
             wordleServer.startServer();
         } catch (IOException ex) {
             System.out.println("Server Exception: " + ex.getMessage());
@@ -26,8 +26,17 @@ public class WordleServer {
     private void startServer() {
         try {
             while (true) {
-                // Il faut implémenter le thread pool
+                /**
+                 * if (maxThread == 0) {
+                 * wait();
+                 * }
+                 * synchronized (maxThread) {
+                 * maxThread--;
+                 * notifyAll();
+                 * }
+                 */
                 Socket clientSocket = serverSocket.accept();
+                System.out.println("New Client connected (" + n.toString() + ") : " + clientSocket.getInetAddress());
                 Thread ClientHandler = new ClientHandlerPrevious(clientSocket);
                 ClientHandler.start();
             }

@@ -5,7 +5,7 @@ import java.util.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
-public class ClientHandler extends Thread {
+public class ClientHandlerPrevious extends Thread {
     private Socket clientSocket;
     private OutputStream out;
     private InputStream in;
@@ -16,7 +16,7 @@ public class ClientHandler extends Thread {
     private final static int WordLength = 5;
     private final static List<String> listWords = new ArrayList<>(WordleWordSet.WORD_SET);
 
-    public ClientHandler(Socket clientSocket) {
+    public ClientHandlerPrevious(Socket clientSocket) {
         super();
         this.clientSocket = clientSocket;
         try {
@@ -37,7 +37,7 @@ public class ClientHandler extends Thread {
             try {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // System.out.println(line);
+                    System.out.println(line);
                     // Deal with GET method
                     if (line.startsWith("GET"))
                         GETReply(line, writer);
@@ -48,6 +48,7 @@ public class ClientHandler extends Thread {
     }
 
     private void GETReply(String query, PrintWriter writer) throws IOException {
+        System.out.println("Answer " + this.answer);
         if (query.equals("GET / HTTP/1.1") || query.equals("GET HTTP/1.1")) {
             handlePageRedirection(writer, "/test.html");
             return;
@@ -56,8 +57,8 @@ public class ClientHandler extends Thread {
         query = query.replace("GET /", "");
         System.out.println(queryTest);
         URL url = new URL("http://localhost:2234" + queryTest.replace("GET ", "").replace(" HTTP/1.1", ""));
-        System.out.println(url.toString());
-        System.out.println(url.getQuery());
+        // System.out.println(url.toString());
+        // System.out.println(url.getQuery());
         if (url.getQuery() == null) {
             Path filePath = Paths.get(query.replace(" HTTP/1.1", ""));
             if (!Files.exists(filePath)) {
@@ -75,7 +76,6 @@ public class ClientHandler extends Thread {
                 ImageIO.write(image, "png", os);
                 String s = Base64.getEncoder().encodeToString(os.toByteArray());
                 String htmlImage = "<img src=\"data:image/png;base64," + s + "\"/>";
-                System.out.println(htmlImage);
                 writer.println("HTTP/1.1 200 OK");
                 writer.println("Content-Type: " + "text/html");
                 writer.println("Content-Length: " + htmlImage.length());
