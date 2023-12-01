@@ -12,20 +12,21 @@ public class WordleConnection {
     private PrintWriter writer;
     private BufferedReader reader;
     private WordleGameState gameState;
-    private CookiesStorage cookieStorage;
+    private CookiesStorage cookiesStorage;
+    private String cookieWordle;
 
     private final static int WordLength = 5;
     private final static List<String> listWords = new ArrayList<>(WordleWordSet.WORD_SET);
 
-    public WordleConnection(Socket clientSocket) {
+    public WordleConnection(Socket clientSocket, CookiesStorage cookiesStorage) {
         super();
         this.clientSocket = clientSocket;
+        this.cookiesStorage = cookiesStorage;
         try {
             this.out = clientSocket.getOutputStream();
             this.in = clientSocket.getInputStream();
             this.writer = new PrintWriter(out, true);
             this.reader = new BufferedReader(new InputStreamReader(in));
-            this.cookieStorage = new CookiesStorage();
         } catch (IOException ex) {
             System.out.println("Server exception:" + ex.getMessage());
         }
@@ -58,6 +59,7 @@ public class WordleConnection {
                             writer.println("HTTP/1.1 405 Method Not Allowed");
                         else
                             writer.println("HTTP/1.1 400 Bad Request");
+                        writer.println();
                     }
                 }
             }
@@ -71,18 +73,42 @@ public class WordleConnection {
         writer.println();
     }
 
-    private void GETReply(String request, String cookieReceived) throws IOException {
-        if (request.equals("GET / HTTP/1.1") || request.equals("GET HTTP/1.1")) {
+    private void GETReply(String request, String cookieListReceived) throws IOException {
+        cookieWordle = null;
+        if (cookieListReceived.contains("_SessionWordle=")) {
+            String[] cookies = cookieListReceived.split("; ");
+            for (String word : cookies) {
+                if (word.startsWith("_SessionWordle=")) {
+                    cookieWordle = word;
+                    break;
+                }
+            }
+
+        } else if (request.equals("GET / HTTP/1.1") || request.equals("GET HTTP/1.1")) {
             handlePageRedirection("/play.html");
             return;
-        }
-        if (request.equals("GET /play.html")) {
-            // Generate a WordleGameState and a cookie for this Game
-            WordleGameState game = new WordleGameState();
-            String cookie = cookieStorage.createCookie(game);
 
-            // TO CONTINUE
+        } else if (request.equals("GET /play.html HTTP/1.1")) {
+            if (cookieWordle != null) {
+                gameState = cookiesStorage.getState(cookieWordle);
+                reply("/play.html");
+            } else {
+                // Generate a WordleGameState and a cookie for this Game
+                gameState = new WordleGameState();
+                cookieWordle = cookiesStorage.createCookie(gameState);
+                reply("/play.html");
+            }
 
+        } else if (request.contains(".png") || request.contains(".css") || request.contains(".js")) {
+            request.replace("GET ", "").replace(" HTTP/1.1", "");
+            reply(request);
+
+        } else if (request.contains("?TRY=")) {
+            request.replace("GET /test.html?TRY=", "").replace(" HTTP/1.1", "");
+            dealWithQuery(request);
+        } else {
+            writer.println("HTTP/1.1 400 Bad Request");
+            writer.println();
         }
 
     }
@@ -90,30 +116,9 @@ public class WordleConnection {
     private void POSTReply(String request, String cookie) throws IOException {
     }
 
-    private String wordleComputePattern(String guess) {
-        char[] returned = { 'B', 'B', 'B', 'B', 'B' };
-        char[] guessTab = guess.toCharArray();
-        char[] answerTab = answer.toCharArray();
-        int[] tab1 = { 1, 1, 1, 1, 1 };
-        int[] tab2 = { 1, 1, 1, 1, 1 };
-        for (int i = 0; i < WordLength; i++) {
-            if (guessTab[i] == answerTab[i]) {
-                tab1[i] = 0;
-                tab2[i] = 0;
-                returned[i] = 'G';
-            }
-        }
-        for (int i = 0; i < WordLength; i++) {
-            for (int j = 0; j < WordLength; j++) {
-                if (guessTab[i] == answerTab[j] && i != j && tab1[j] == 1 && tab2[i] == 1) {
-                    returned[i] = 'Y';
-                    tab1[j] = 0;
-                    tab2[i] = 0;
-                    break;
-                }
-            }
-        }
-        return new String(returned);
+    private void reply(String path) {
     }
 
+    private void dealWithQuery(String query) {
+    }
 }
