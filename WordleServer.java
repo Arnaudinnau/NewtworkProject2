@@ -6,11 +6,13 @@ public class WordleServer {
     private final static int port = 8020;
     private Integer n = 5;
     private Integer maxThread;
+    private CookiesStorage cookiesStorage;
 
     public WordleServer() throws IOException {
         this.serverSocket = new ServerSocket(port);
         // this.n = 0;
         // this.maxThread = Integer.parseInt(arg);
+        this.cookiesStorage = new CookiesStorage();
         System.out.println("The server is listening on port " + port);
     }
 
@@ -28,8 +30,8 @@ public class WordleServer {
             while (true) {
                 // Il faut implémenter le thread pool
                 Socket clientSocket = serverSocket.accept();
-                Thread ClientHandler = new ClientHandlerPrevious(clientSocket);
-                ClientHandler.start();
+                Thread WordleConnection = new WordleConnection(clientSocket, cookiesStorage);
+                WordleConnection.start();
             }
         } catch (Exception ex) {
             System.out.println("Server exception: " + ex.getMessage());

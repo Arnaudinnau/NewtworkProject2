@@ -155,29 +155,4 @@ public class ClientHandlerPrevious extends Thread {
         return returned;
     }
 
-    private String wordleComputePattern(String guess) {
-        char[] returned = { 'B', 'B', 'B', 'B', 'B' };
-        char[] guessTab = guess.toCharArray();
-        char[] answerTab = answer.toCharArray();
-        int[] tab1 = { 1, 1, 1, 1, 1 };
-        int[] tab2 = { 1, 1, 1, 1, 1 };
-        for (int i = 0; i < WordLength; i++) {
-            if (guessTab[i] == answerTab[i]) {
-                tab1[i] = 0;
-                tab2[i] = 0;
-                returned[i] = 'G';
-            }
-        }
-        for (int i = 0; i < WordLength; i++) {
-            for (int j = 0; j < WordLength; j++) {
-                if (guessTab[i] == answerTab[j] && i != j && tab1[j] == 1 && tab2[i] == 1) {
-                    returned[i] = 'Y';
-                    tab1[j] = 0;
-                    tab2[i] = 0;
-                    break;
-                }
-            }
-        }
-        return new String(returned);
-    }
 }

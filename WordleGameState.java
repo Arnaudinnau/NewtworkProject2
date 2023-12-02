@@ -12,8 +12,7 @@ public class WordleGameState {
     private final static List<String> listWords = new ArrayList<>(WordleWordSet.WORD_SET);
     private final static int WordLength = 5;
 
-    public WordleGameState(String cookie) {
-        this.cookie = cookie;
+    public WordleGameState() {
         this.tries = 0;
         this.hiddenWord = listWords.get(new Random().nextInt(listWords.size()));
         this.wordsTried = new Vector<>(6);
@@ -27,7 +26,6 @@ public class WordleGameState {
             String guess = query.substring("TRY ".length());
             System.out.println(guess);
             if (guess.length() == WordLength) {
-                // if (guess.matches("[A-Z]+") && guess.length() == WordLength) {
                 if (!listWords.contains(guess.toLowerCase())) {
                     returned = "NONEXISTENT";
                 } else {
@@ -38,12 +36,9 @@ public class WordleGameState {
                     returned = returned.concat(" GAMEOVER");
             }
         } else if (query.equals("QUIT")) {
-            this.clientSocket.close();
-            return null;
+            return "QUIT";
         }
         return returned;
-    }
-
     }
 
     private String wordleComputePattern(String guess) {
