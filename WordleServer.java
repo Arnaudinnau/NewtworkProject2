@@ -32,6 +32,7 @@ public class WordleServer {
                 Socket clientSocket = serverSocket.accept();
                 Thread WordleConnection = new WordleConnection(clientSocket, cookiesStorage);
                 WordleConnection.start();
+                cookiesStorage.removeExpiredCookie();
             }
         } catch (Exception ex) {
             System.out.println("Server exception: " + ex.getMessage());

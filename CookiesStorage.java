@@ -1,28 +1,51 @@
 import java.util.*;
 
 public class CookiesStorage {
-    private Vector<String> cookiesList;
-    private Vector<WordleGameState> stateList;
+    private Vector<CookieState> cookiesList;
 
     public CookiesStorage() {
         this.cookiesList = new Vector<>();
-        this.stateList = new Vector<>();
     }
 
     public String createCookie(WordleGameState state) {
         Long randomLong = new Random().nextLong();
         String cookie = "_SessionWordle=" + randomLong.toString();
-        cookiesList.add(cookie);
-        stateList.add(state);
-
+        synchronized (cookiesList) {
+            cookiesList.add(new CookieState(cookie, state));
+        }
         return cookie;
     }
 
     public WordleGameState getState(String cookie) throws CookiesNotInListException {
-        try {
-            return stateList.get(cookiesList.indexOf(cookie));
-        } catch (Exception e) {
+        WordleGameState state = null;
+        synchronized (cookiesList) {
+            for (CookieState elem : cookiesList) {
+                if (elem.getCookie().equals(cookie))
+                    state = elem.getState();
+            }
+        }
+        if (state != null) {
+            return state;
+        } else
             throw new CookiesNotInListException();
+    }
+
+    public void removeSpecificCookie(String cookie) {
+        synchronized (cookiesList) {
+            for (CookieState elem : cookiesList) {
+                if (elem.getCookie().equals(cookie))
+                    cookiesList.remove(elem);
+            }
         }
     }
+
+    public void removeExpiredCookie() {
+        synchronized (cookiesList) {
+            for (CookieState elem : cookiesList) {
+                if (elem.hasExpired())
+                    cookiesList.remove(elem);
+            }
+        }
+    }
+
 }

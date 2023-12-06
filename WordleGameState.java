@@ -7,7 +7,6 @@ public class WordleGameState {
     private String hiddenWord;
     private int tries;
     private Vector<String> wordsTried;
-    private String cookie;
 
     private final static List<String> listWords = new ArrayList<>(WordleWordSet.WORD_SET);
     private final static int WordLength = 5;
@@ -19,6 +18,7 @@ public class WordleGameState {
     }
 
     public String answerToQuery(String query) {
+        System.out.println(query);
         String returned = "WRONG";
         if (query.equals("CHEAT")) {
             returned = hiddenWord.toUpperCase();
@@ -70,9 +70,7 @@ public class WordleGameState {
     }
 
     public byte[] getData(String path) {
-        System.out.println("Hello" + path);
         PageHandler pageHandler = new PageHandler(wordsTried);
-        System.out.println("H" + path);
         if (path.contains("html"))
             return pageHandler.getHTML();
         return null;

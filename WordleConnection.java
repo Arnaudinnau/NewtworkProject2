@@ -109,9 +109,7 @@ public class WordleConnection extends Thread {
                                     }
                                 }
                             }
-                            System.out.println("End Header");
                             if (line.startsWith("GET")) {
-                                System.out.println("WTF");
                                 GETReply(line);
                             } else
                                 POSTReply(line);
@@ -128,7 +126,6 @@ public class WordleConnection extends Thread {
     }
 
     private void handlePageRedirection(String path) {
-        System.out.println("Redirection");
         writer.println("HTTP/1.1 303 See Other");
         writer.println("Location: " + path);
         writer.println();
@@ -190,20 +187,22 @@ public class WordleConnection extends Thread {
         writer.println("HTTP/1.1 200 OK");
         writer.println("Content-Type: text/plain");
         writer.println("Content-Length: " + word.length());
-        writer.println("Set-Cookie: " + cookieWordle);
+        if (cookieWordle == null)
+            writer.println("Set-Cookie: _SessionWordle=deleted,expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        else
+            writer.println("Set-Cookie: " + cookieWordle);
         writer.println("Connection: close");
         writer.println(); // Empty line to indicate the end of headers
         writer.println(word);
     }
 
     private void dealWithQuery(String query) throws IOException {
-        System.out.println(query);
-        if (cookieWordle == null) {
-            // Generate a WordleGameState and a cookie for this Game
-            this.gameState = new WordleGameState();
-            this.cookieWordle = cookiesStorage.createCookie(gameState);
-        }
         String answer = gameState.answerToQuery(query);
+        System.out.println("answer" + answer);
+        if (answer.contains("GAMEOVER") || answer.contains("QUIT")) {
+            cookiesStorage.removeSpecificCookie(cookieWordle);
+            cookieWordle = null;
+        }
         replyWord(answer);
     }
 }
