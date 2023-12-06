@@ -188,7 +188,7 @@ public class WordleConnection extends Thread {
         writer.println("Content-Type: text/plain");
         writer.println("Content-Length: " + word.length());
         if (cookieWordle == null)
-            writer.println("Set-Cookie: _SessionWordle=deleted,expires=Thu, 01 Jan 1970 00:00:00 GMT");
+            writer.println("Set-Cookie: _SessionWordle=deleted; path =/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
         else
             writer.println("Set-Cookie: " + cookieWordle);
         writer.println("Connection: close");
@@ -200,7 +200,7 @@ public class WordleConnection extends Thread {
         String answer = gameState.answerToQuery(query);
         System.out.println("answer" + answer);
         if (answer.contains("GAMEOVER") || answer.contains("QUIT")) {
-            cookiesStorage.removeSpecificCookie(cookieWordle);
+            // cookiesStorage.removeSpecificCookie(cookieWordle);
             cookieWordle = null;
         }
         replyWord(answer);

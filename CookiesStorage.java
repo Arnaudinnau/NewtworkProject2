@@ -31,10 +31,12 @@ public class CookiesStorage {
     }
 
     public void removeSpecificCookie(String cookie) {
+        System.out.println(cookie);
         synchronized (cookiesList) {
             for (CookieState elem : cookiesList) {
                 if (elem.getCookie().equals(cookie))
                     cookiesList.remove(elem);
+                System.out.println("Prorbeê");
             }
         }
     }
