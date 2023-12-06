@@ -18,7 +18,11 @@ public class CookiesStorage {
         return cookie;
     }
 
-    public WordleGameState getState(String cookie) {
-        return stateList.get(cookiesList.indexOf(cookie));
+    public WordleGameState getState(String cookie) throws CookiesNotInListException {
+        try {
+            return stateList.get(cookiesList.indexOf(cookie));
+        } catch (Exception e) {
+            throw new CookiesNotInListException();
+        }
     }
 }

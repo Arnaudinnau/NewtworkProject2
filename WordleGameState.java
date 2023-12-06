@@ -22,6 +22,7 @@ public class WordleGameState {
         String returned = "WRONG";
         if (query.equals("CHEAT")) {
             returned = hiddenWord.toUpperCase();
+            System.out.println("cheat" + returned);
         } else if (query.startsWith("TRY")) {
             String guess = query.substring("TRY ".length());
             System.out.println(guess);
@@ -30,6 +31,7 @@ public class WordleGameState {
                     returned = "NONEXISTENT";
                 } else {
                     tries++;
+                    wordsTried.add(guess + returned);
                     returned = wordleComputePattern(guess.toLowerCase());
                 }
                 if (returned.equals("GGGGG") || tries == 6)
@@ -65,5 +67,14 @@ public class WordleGameState {
             }
         }
         return new String(returned);
+    }
+
+    public byte[] getData(String path) {
+        System.out.println("Hello" + path);
+        PageHandler pageHandler = new PageHandler(wordsTried);
+        System.out.println("H" + path);
+        if (path.contains("html"))
+            return pageHandler.getHTML();
+        return null;
     }
 }
