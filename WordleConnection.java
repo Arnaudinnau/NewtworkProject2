@@ -1,8 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.*;
-
-import javax.sound.midi.SysexMessage;
 
 public class WordleConnection extends Thread {
     private Socket clientSocket;
@@ -29,56 +26,11 @@ public class WordleConnection extends Thread {
         }
     }
 
-    /*
-     * public void run() {
-     * try {
-     * while (true) {
-     * String line;
-     * while ((line = reader.readLine()) != null) {
-     * System.out.println(line);
-     * if (line.contains("HTTP")) {
-     * if (!line.contains("HTTP/1.1")) {
-     * writer.println("HTTP/1.1 505 HTTP Version Not Supported");
-     * writer.println();
-     * break;
-     * } else if (line.startsWith("GET") || line.startsWith("POST")) {
-     * System.out.println("ok");
-     * while (!reader.readLine().startsWith("Cookie:")) {
-     * }
-     * String cookieListReceived2 = reader.readLine();
-     * System.out.println(cookieListReceived2);
-     * String cookieListReceived = cookieListReceived2.replace("Cookie: ", "");
-     * System.out.println("H" + cookieListReceived);
-     * String[] cookies = cookieListReceived.split("; ");
-     * for (String word : cookies) {
-     * if (word.startsWith("_SessionWordle=")) {
-     * this.cookieWordle = word;
-     * this.gameState = cookiesStorage.getState(cookieWordle);
-     * break;
-     * }
-     * }
-     * if (line.startsWith("GET"))
-     * GETReply(line);
-     * else
-     * POSTReply(line);
-     * } else if (line.startsWith("PUT") || line.startsWith("HEAD") ||
-     * line.startsWith("DELETE"))
-     * writer.println("HTTP/1.1 405 Method Not Allowed");
-     * else
-     * writer.println("HTTP/1.1 400 Bad Request");
-     * writer.println();
-     * }
-     * }
-     * }
-     * } catch (Exception e) {
-     * }
-     * }
-     */
-
     public void run() {
         try {
             while (true) {
                 String line, header;
+                Integer contentLength = 0;
                 while ((line = reader.readLine()) != null) {
                     System.out.println(line);
                     if (line.contains("HTTP")) {
@@ -108,20 +60,33 @@ public class WordleConnection extends Thread {
                                         }
                                     }
                                 }
+
+                                if (header.startsWith("Content-Length: ")) {
+                                    contentLength = Integer.parseInt(header.replace("Content-Length: ", ""));
+                                }
                             }
                             if (line.startsWith("GET")) {
                                 GETReply(line);
-                            } else
-                                POSTReply(line);
+                            } else {
+                                char[] buffer = new char[contentLength - 2];
+                                reader.read(buffer, 0, contentLength - 2);
+                                String input = new String(buffer);
+                                POSTReply(input);
+                            }
+
                         } else if (line.startsWith("PUT") || line.startsWith("HEAD") || line.startsWith("DELETE"))
                             writer.println("HTTP/1.1 405 Method Not Allowed");
                         else
                             writer.println("HTTP/1.1 400 Bad Request");
                         writer.println();
                     }
+                    clientSocket.close();
+                    return;
                 }
             }
-        } catch (Exception e) {
+
+        } catch (Exception ex) {
+            System.out.println("Connection Exception: " + ex.getMessage());
         }
     }
 
@@ -155,7 +120,17 @@ public class WordleConnection extends Thread {
         }
     }
 
-    private void POSTReply(String request) throws IOException {
+    private void POSTReply(String payload) throws IOException {
+        if (payload.contains("TRY")) {
+            payload = payload.replace("=", " ");
+            String answer = gameState.answerToQuery(payload);
+            if (answer.contains("GAMEOVER")) {
+                gameState.NextStatus();
+                gameState.NextStatus();
+            }
+
+            replyHTML("/play.html");
+        }
     }
 
     private void replyHTML(String path) {
@@ -168,7 +143,12 @@ public class WordleConnection extends Thread {
         writer.println("HTTP/1.1 200 OK");
         writer.println("Content-Type: text/html");
         writer.println("Transfer-Encoding: chunked");
-        writer.println("Set-Cookie: " + cookieWordle);
+        if (gameState.GetStatus() == GameStatus.TOCLOSE) {
+            cookiesStorage.removeSpecificCookie(cookieWordle);
+            cookieWordle = null;
+            writer.println("Set-Cookie: _SessionWordle=deleted; path =/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+        } else
+            writer.println("Set-Cookie: " + cookieWordle);
         writer.println("Connection: close");
         writer.println(); // Empty line to indicate the end of headers
 
@@ -187,9 +167,11 @@ public class WordleConnection extends Thread {
         writer.println("HTTP/1.1 200 OK");
         writer.println("Content-Type: text/plain");
         writer.println("Content-Length: " + word.length());
-        if (cookieWordle == null)
+        if (gameState.GetStatus() == GameStatus.TOCLOSE) {
+            cookiesStorage.removeSpecificCookie(cookieWordle);
+            cookieWordle = null;
             writer.println("Set-Cookie: _SessionWordle=deleted; path =/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
-        else
+        } else
             writer.println("Set-Cookie: " + cookieWordle);
         writer.println("Connection: close");
         writer.println(); // Empty line to indicate the end of headers
@@ -198,10 +180,11 @@ public class WordleConnection extends Thread {
 
     private void dealWithQuery(String query) throws IOException {
         String answer = gameState.answerToQuery(query);
-        System.out.println("answer" + answer);
+        if (gameState.GetStatus() == GameStatus.LASTQUERY) {
+            gameState.NextStatus();
+        }
         if (answer.contains("GAMEOVER") || answer.contains("QUIT")) {
-            // cookiesStorage.removeSpecificCookie(cookieWordle);
-            cookieWordle = null;
+            gameState.NextStatus();
         }
         replyWord(answer);
     }

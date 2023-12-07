@@ -1,3 +1,4 @@
-ThreadPool
 Quid si javaScript disable?
-Si on relance il faut les couleurs et en plus bizarrement il y a plus que 5 cases.
+    Ca ne send pas de request POST à chaque fois wtf et les couelurs comment t'as prevu de les mettre?
+Image
+Quand fini il ne aut plus savoir ecrire

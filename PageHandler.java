@@ -28,16 +28,17 @@ public class PageHandler {
 				"<html>\n" +
 				"<head>\n" +
 				"<title>Wordle</title>\n" +
-				"<link rel=\"icon\" type=\"image/x-icon\" href=\"icon.png\">\n" +
+				"<link rel=\"icon\" type=\"image/x-icon\" href=" + this.stringPNG() + ">\n" +
 				"<style>\n" +
 				cssCode + "\n" +
 				"</style>\n" +
 				"</head>\n";
 
 		htmlCode += "<body>\n" +
-				"<p style=\"text-align:center;\"> <img src=\"logo.png\" width=\"404\" height=\"102\"></p>\n" +
-				"<div id=\"js-abled\">\n";
+				"<p style=\"text-align:center;\"> <img src=" + this.stringPNG()
+				+ " width=\"404\" height=\"102\"></p>\n";
 
+		// DISPLAYING WORDS
 		int boxes;
 		int tries;
 
@@ -59,9 +60,9 @@ public class PageHandler {
 				htmlCode += "<div class=\"input-boxes\">\n";
 				for (boxes = 0; boxes < 5; boxes++) {
 					String color = Character.toString(gameState.get(tries).charAt(boxes + 5));
-					if (color.equals('G')) {
+					if (color.equals("G")) {
 						color = "#1cdf21";
-					} else if (color.equals('Y')) {
+					} else if (color.equals("Y")) {
 						color = "#f4d03f";
 					} else {
 						color = "#515a5a";
@@ -75,7 +76,7 @@ public class PageHandler {
 			}
 
 			// available tries
-			for (tries = 0; tries < 5 - nbTries; tries++) {
+			for (tries = 0; tries < 6 - nbTries; tries++) {
 				htmlCode += "<div class=\"input-boxes\">\n";
 				for (boxes = 0; boxes < 5; boxes++) {
 					htmlCode += "<div class=\"input-box\" ></div>\n";
@@ -85,7 +86,12 @@ public class PageHandler {
 
 		}
 
+		// JS AUTHORIZED
+		htmlCode += "<div id=\"js-abled\">\n";
+
 		htmlCode += "<div class=\"wrongTry\" id=\"wrongTry\"></div>\n";
+
+		htmlCode += "<div class=\"endGame\" id=\"endGame\"></div>\n";
 
 		htmlCode += "<div class=\"keyboard\">\n" +
 				"<button id = letter onclick=\"appendToInput('A')\">A</button>\n" +
@@ -124,41 +130,17 @@ public class PageHandler {
 				"</script>\n" +
 				"</div>\n";
 
+		// JS DISABLED
 		htmlCode += "<div id=\"js-disabled\">\n" +
-				"<noscript>\n" +
-				"<form action=\"/play.html?POST\" method=\"post\" class=\"form\">\n";
+				"<noscript>\n";
 
-		// new game
-		if (this.isEmpty) {
-			for (tries = 1; tries < 7; tries++) {
-				htmlCode += "<div class=\"form\">\n" +
-						"<label for=\"try" + tries + "\">Try " + tries + " :</label>\n" +
-						"<input type=\"text\" id=\"try" +
-						"boxes \"required maxlength=\"5\">\n" +
-						"<input type=\"submit\" value=\"Submit\">\n" +
-						"</div>\n";
-			}
-		}
+		htmlCode += "<form method=\"post\" class=\"form\" enctype=\"text/plain\">\n" +
+				"<label for=\"TRY\">Your guess :</label>\n" +
+				"<input type=\"text\" name=\"TRY\" id=\"TRY\" maxlength=\"5\" style=\"text-transform:uppercase\">\n" +
+				"<input type=\"submit\" value=\"Submit\">\n" +
+				"</form>\n";
 
-		// already began game
-		else {
-			// already sent tries
-			for (tries = 0; tries < nbTries; tries++) {
-			}
-
-			// available tries
-			for (tries = nbTries + 1; tries <= 5; tries++) {
-				htmlCode += "<div class=\"form\">\n" +
-						"<label for=\"try" + tries + "\">Try " + tries + " :</label>\n" +
-						"<input type=\"text\" id=\"try" +
-						"boxes \"required maxlength=\"5\">\n" +
-						"<input type=\"submit\" value=\"Submit\">\n" +
-						"</div>\n";
-			}
-		}
-
-		htmlCode += "</form>\n" +
-				"</noscript>\n" +
+		htmlCode += "</noscript>\n" +
 				"</div>\n" +
 				"</body>\n" +
 				"</html>\n";
@@ -167,7 +149,6 @@ public class PageHandler {
 	}
 
 	private String stringJS() {
-		// afficher les couleurs déjà données ici?
 
 		String jsCode = "let currentBox = " + nbBoxes + ";\n" +
 
@@ -265,6 +246,32 @@ public class PageHandler {
 				"color++\n" +
 				"}\n" +
 				"currentTry++;\n" +
+
+				"if(output.includes(\"GAMEOVER\")){\n" +
+				"let cheat;\n" +
+				"xhttp2 = new XMLHttpRequest();\n" +
+				"xhttp2.onreadystatechange = function(){\n" +
+				"if(xhttp2.status==200 && xhttp2.readyState == 4){\n" +
+				"cheat = xhttp2.responseText;\n" +
+				"let endGame = document.getElementById('endGame');\n" +
+				"if(output.includes(\"GGGGG\")){\n" +
+				"endGame.innerText=\"YOU WIN, the word was : \"+ cheat;\n" +
+				"endGame.style.backgroundColor='#1cdf21';\n" +
+				"}\n" +
+				"else{\n" +
+				"endGame.innerText=\"GAMEOVER, the word was : \"+ cheat;\n" +
+				"endGame.style.backgroundColor='#df301c';\n" +
+				"}\n" +
+				"endGame.style.display='block';\n" +
+				"}\n" +
+				"};\n" +
+				"xhttp2.open(\"GET\", \"/play.html?CHEAT\");\n" +
+				"xhttp2.send();\n" +
+
+				"currentTry=5;\n" +
+				"currentBox=30;\n" +
+				"}\n" +
+
 				"}\n" +
 				"};\n" +
 				"xhttp.open(\"GET\", \"/play.html?TRY=\" + input);\n" +
@@ -371,15 +378,25 @@ public class PageHandler {
 				"padding: 10px;\n" +
 				"}\n" +
 
+				".endGame{\n" +
+				"display: none;\n" +
+				"position: fixed;\n" +
+				"top: 50%;\n" +
+				"left: 30%;\n" +
+				"right: 30%;\n" +
+				"background-color: darkred;\n" +
+				"color: white;\n" +
+				"border-radius: 30px;\n" +
+				"font-size: 40px;\n" +
+				"padding: 30px;\n" +
+				"text-align: center;\n" +
+				"}\n" +
+
 				"form.form{\n" +
 				"display :table;\n" +
 				"margin-left: auto;\n" +
 				"margin-right: auto;\n" +
 				"margin-top : 40px;\n" +
-				"}\n" +
-
-				"div.form{\n" +
-				"display: table-row;\n" +
 				"}\n" +
 
 				"label,\n" +
@@ -398,31 +415,26 @@ public class PageHandler {
 
 	}
 
+	public String stringPNG() {
+		try {
+			File file = new File("logo.png");
+			BufferedImage image = ImageIO.read(file);
+			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", os);
+			String s = Base64.getEncoder().encodeToString(os.toByteArray());
+			String htmlImage = "data:image/png;base64," + s;
+			return htmlImage;
+		} catch (IOException e) {
+			System.out.println(e);
+		}
+
+		return null;
+	}
+
 	public byte[] getHTML() {
 		String htmlCode = this.stringHTML();
 		byte[] byteHTML = htmlCode.getBytes();
 		return byteHTML;
 	}
 
-	public byte[] getJS() {
-		String jsCode = this.stringJS();
-		byte[] byteJS = jsCode.getBytes();
-		return byteJS;
-	}
-
-	public byte[] getCSS() {
-		String cssCode = this.stringCSS();
-		byte[] byteCSS = cssCode.getBytes();
-		return byteCSS;
-	}
-
-	public byte[] getPNG() throws IOException {
-		File file = new File("logo.png");
-		BufferedImage image = ImageIO.read(file);
-		final ByteArrayOutputStream os = new ByteArrayOutputStream();
-		ImageIO.write(image, "png", os);
-		String s = Base64.getEncoder().encodeToString(os.toByteArray());
-		String htmlImage = "data:image/png;base64," + s;
-		return htmlImage.getBytes();
-	}
 }

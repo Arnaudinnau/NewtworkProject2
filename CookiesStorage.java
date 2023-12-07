@@ -31,21 +31,21 @@ public class CookiesStorage {
     }
 
     public void removeSpecificCookie(String cookie) {
-        System.out.println(cookie);
         synchronized (cookiesList) {
-            for (CookieState elem : cookiesList) {
-                if (elem.getCookie().equals(cookie))
-                    cookiesList.remove(elem);
-                System.out.println("Prorbeê");
+            for (int i = 0; i < cookiesList.size(); i++) {
+                if (cookiesList.get(i).getCookie().equals(cookie)) {
+                    cookiesList.remove(i);
+                }
             }
         }
     }
 
     public void removeExpiredCookie() {
         synchronized (cookiesList) {
-            for (CookieState elem : cookiesList) {
-                if (elem.hasExpired())
-                    cookiesList.remove(elem);
+            for (int i = 0; i < cookiesList.size(); i++) {
+                if (cookiesList.get(i).hasExpired()) {
+                    cookiesList.remove(i);
+                }
             }
         }
     }

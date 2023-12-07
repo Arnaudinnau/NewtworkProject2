@@ -26,15 +26,6 @@ public class WordleServerPrevious {
     private void startServer() {
         try {
             while (true) {
-                /**
-                 * if (maxThread == 0) {
-                 * wait();
-                 * }
-                 * synchronized (maxThread) {
-                 * maxThread--;
-                 * notifyAll();
-                 * }
-                 */
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("New Client connected (" + n.toString() + ") : " + clientSocket.getInetAddress());
                 Thread ClientHandler = new ClientHandlerPrevious(clientSocket);
