@@ -54,7 +54,7 @@ public class WordleConnection extends Thread {
         try {
             while (true) {
                 String line, header;
-                Integer contentLength = 0;
+                Integer contentLength = -1;
                 while ((line = reader.readLine()) != null) {
                     System.out.println("Thread " + this.threadIdentifier + ": " + line);
                     if (line.contains("HTTP")) {
@@ -95,17 +95,31 @@ public class WordleConnection extends Thread {
                             if (line.startsWith("GET"))
                                 GETReply(line);
                             if (line.startsWith("POST")) {
-                                // Reading the payload of the request
-                                char[] buffer = new char[contentLength - 2];
-                                reader.read(buffer, 0, contentLength - 2);
-                                String input = new String(buffer);
-                                POSTReply(input);
+                                if (!line.equals("POST /play.html HTTP/1.1")) {
+                                    writer.println("404 Not Found HTTP/1.1");
+                                    writer.println();
+                                } else {
+                                    if (contentLength == -1) {
+                                        writer.println("HTTP/1.1 411 Length Required");
+                                        writer.println();
+                                    }
+                                    // Reading the payload of the request
+                                    char[] buffer = new char[contentLength - 2];
+                                    try {
+                                        reader.read(buffer, 0, contentLength - 2);
+                                    } catch (NullPointerException ex) {
+                                        writer.println("400 Bad Request HTTP/1.1");
+                                        writer.println();
+                                    }
+                                    String input = new String(buffer);
+                                    POSTReply(input);
+                                }
                             }
 
                         } else if (line.startsWith("PUT") || line.startsWith("HEAD") || line.startsWith("DELETE"))
                             writer.println("HTTP/1.1 405 Method Not Allowed");
                         else
-                            writer.println("HTTP/1.1 400 Bad Request");
+                            writer.println("HTTP/1.1 501 Not Implement");
                         writer.println();
                     }
                     clientSocket.close();
@@ -148,14 +162,17 @@ public class WordleConnection extends Thread {
             }
             replyHTML("/play.html");
 
-        } else if (request.contains("play.html?TRY=")) {
+        } else if (request.contains("play.html?TRY=") && cookieWordle != null) {
             request = request.replace("GET /play.html?TRY=", "TRY ").replace(" HTTP/1.1", "");
             replyWord(request);
-        } else if (request.contains("play.html?CHEAT")) {
+        } else if (request.contains("play.html?CHEAT") && cookieWordle != null) {
             request = request.replace("GET /play.html?CHEAT", "CHEAT").replace(" HTTP/1.1", "");
             replyWord(request);
         } else {
-            writer.println("HTTP/1.1 400 Bad Request");
+            if (request.contains("/play.html"))
+                writer.println("HTTP/1.1 400 Bad Request");
+            else
+                writer.println("HTTP/1.1 404 Not Found");
             writer.println();
         }
     }
@@ -167,7 +184,7 @@ public class WordleConnection extends Thread {
      * @throws IOException
      */
     private void POSTReply(String payload) throws IOException {
-        if (payload.contains("play.html?TRY=")) {
+        if (payload.contains("TRY=")) {
             payload = payload.replace("=", " ");
             String answer = gameState.answerToQuery(payload);
             if (answer.contains("GAMEOVER")) {
@@ -177,7 +194,7 @@ public class WordleConnection extends Thread {
 
             handlePageRedirection("/play.html");
         } else {
-            writer.println("HTTP/1.1 404 Not Found");
+            writer.println("HTTP/1.1 400 Bad Request");
             writer.println();
         }
     }
