@@ -3,15 +3,33 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
+/**
+ * This class encapsulates all the information necessary to fully describe a
+ * game state of Wordle,
+ * including the cookie, the hidden word, the number of trials, and a list of
+ * previous trials along
+ * with their respective replies and the game status.
+ * It is responsible for accurately responding to CHEAT and TRY queries.
+ * 
+ * @author Arnaud Innaurato, Sophia Donato
+ * @since 2023-12-10
+ */
+
 public class WordleGameState {
     private String hiddenWord;
     private int tries;
     private Vector<String> wordsTried;
     private GameStatus status;
-
-    private final static List<String> listWords = new ArrayList<>(WordleWordSet.WORD_SET);
+    /**
+     * @value 5 WordLength (size of a woordle word)
+     * @value listWords (database of all possible 5 letters words accepted)
+     */
     private final static int WordLength = 5;
+    private final static List<String> listWords = new ArrayList<>(WordleWordSet.WORD_SET);
 
+    /**
+     * Constructor of a specific game state
+     */
     public WordleGameState() {
         this.tries = 0;
         this.hiddenWord = listWords.get(new Random().nextInt(listWords.size()));
@@ -19,6 +37,12 @@ public class WordleGameState {
         this.status = GameStatus.RUNNING;
     }
 
+    /**
+     * Answer to a TRY, CHEAT query
+     * 
+     * @param query
+     * @return word to send to the client
+     */
     public String answerToQuery(String query) {
         String returned = "WRONG";
         if (query.equals("CHEAT")) {
@@ -42,6 +66,12 @@ public class WordleGameState {
         return returned;
     }
 
+    /**
+     * Method to compute the pattern of a guess given
+     * 
+     * @param guess String with the correct format and in the database
+     * @return String which contains the pattern computed (Woordle)
+     */
     private String wordleComputePattern(String guess) {
         char[] returned = { 'B', 'B', 'B', 'B', 'B' };
         char[] guessTab = guess.toCharArray();
@@ -68,9 +98,14 @@ public class WordleGameState {
         return new String(returned);
     }
 
+    /**
+     * Return a complete html file related to this gameState in byte[] format
+     * 
+     * @param path
+     * @return complete html file
+     */
     public byte[] getData(String path) {
         PageHandler pageHandler = new PageHandler(wordsTried);
-        System.out.println(wordsTried);
         if (path.contains("html"))
             return pageHandler.getHTML();
         return null;
@@ -80,6 +115,11 @@ public class WordleGameState {
         return status;
     }
 
+    /**
+     * Change the status of the game
+     * Running => LastQuery
+     * LastQuery => ToClose
+     */
     public void NextStatus() {
         if (status == GameStatus.RUNNING)
             this.status = GameStatus.LASTQUERY;

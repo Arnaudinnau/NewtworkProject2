@@ -3,12 +3,25 @@ import java.util.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
+/**
+ * This class contains the HTML, CSS, and JS code.
+ * It provides the client with the entire interface to play and send queries to
+ * the server.
+ * 
+ * @author Arnaud Innaurato, Sophia Donato
+ * @since 2023-12-10
+ */
 public class PageHandler {
-	private Vector<String> gameState; // forme des string du vecteur : "WORLDCOLOR" (collés sans rien entre)
+	private Vector<String> gameState;
 	private boolean isEmpty;
 	private int nbTries;
 	private int nbBoxes;
 
+	/**
+	 * Constructor for a specific gameState
+	 * 
+	 * @param gameState
+	 */
 	public PageHandler(Vector<String> gameState) {
 		this.gameState = gameState;
 		int tries = gameState.size();
@@ -21,21 +34,37 @@ public class PageHandler {
 			this.isEmpty = false;
 	}
 
+	/**
+	 * Returns the complete html fil in byte[] format
+	 * 
+	 * @return
+	 */
+	public byte[] getHTML() {
+		String htmlCode = this.stringHTML();
+		byte[] byteHTML = htmlCode.getBytes();
+		return byteHTML;
+	}
+
+	/**
+	 * Returns the complete html fil in String format
+	 * 
+	 * @return
+	 */
 	private String stringHTML() {
-		String cssCode = this.stringCSS();
+		String cssCode = stringCSS();
 		String jsCode = this.stringJS();
 		String htmlCode = "<!DOCTYPE html>\n" +
 				"<html>\n" +
 				"<head>\n" +
 				"<title>Wordle</title>\n" +
-				"<link rel=\"icon\" type=\"image/x-icon\" href=" + this.stringPNG() + ">\n" +
+				"<link rel=\"icon\" type=\"image/x-icon\" href=" + stringPNG() + ">\n" +
 				"<style>\n" +
 				cssCode + "\n" +
 				"</style>\n" +
 				"</head>\n";
 
 		htmlCode += "<body>\n" +
-				"<p style=\"text-align:center;\"> <img src=" + this.stringPNG()
+				"<p style=\"text-align:center;\"> <img src=" + stringPNG()
 				+ " width=\"404\" height=\"102\"></p>\n";
 
 		// DISPLAYING WORDS
@@ -134,11 +163,22 @@ public class PageHandler {
 		htmlCode += "<div id=\"js-disabled\">\n" +
 				"<noscript>\n";
 
-		htmlCode += "<form method=\"post\" class=\"form\" enctype=\"text/plain\">\n" +
-				"<label for=\"TRY\">Your guess :</label>\n" +
-				"<input type=\"text\" name=\"TRY\" id=\"TRY\" maxlength=\"5\" style=\"text-transform:uppercase\">\n" +
-				"<input type=\"submit\" value=\"Submit\">\n" +
-				"</form>\n";
+		if (isEmpty || !(gameState.get(nbTries - 1).contains("GAMEOVER"))) {
+			htmlCode += "<form method=\"post\" class=\"form\" enctype=\"text/plain\">\n" +
+					"<label for=\"TRY\">Your guess :</label>\n" +
+					"<input type=\"text\" name=\"TRY\" id=\"TRY\" maxlength=\"5\" style=\"text-transform:uppercase\">\n"
+					+
+					"<input type=\"submit\" value=\"Submit\">\n" +
+					"</form>\n";
+		}
+
+		else {
+			if (gameState.get(nbTries - 1).contains("GGGGG")) {
+				htmlCode += "<div class=\"endGame\" id=\"endGame\" style=\"background-color: #1cdf21; display : block;\">You win !</div>\n";
+			} else {
+				htmlCode += "<div class=\"endGame\" id=\"endGame\" style=\"background-color: darkred; display : block;\">You lose ! </div>\n";
+			}
+		}
 
 		htmlCode += "</noscript>\n" +
 				"</div>\n" +
@@ -148,6 +188,11 @@ public class PageHandler {
 		return htmlCode;
 	}
 
+	/**
+	 * Returns the JS file in String format
+	 * 
+	 * @return
+	 */
 	private String stringJS() {
 
 		String jsCode = "let currentBox = " + nbBoxes + ";\n" +
@@ -299,7 +344,12 @@ public class PageHandler {
 
 	}
 
-	private String stringCSS() {
+	/**
+	 * Returns the CSS file in String format
+	 * 
+	 * @return
+	 */
+	private static String stringCSS() {
 		String cssCode = "body {background-color: #1D2067  ;}" +
 
 				"#js-abled{\n" +
@@ -384,7 +434,6 @@ public class PageHandler {
 				"top: 50%;\n" +
 				"left: 30%;\n" +
 				"right: 30%;\n" +
-				"background-color: darkred;\n" +
 				"color: white;\n" +
 				"border-radius: 30px;\n" +
 				"font-size: 40px;\n" +
@@ -415,7 +464,12 @@ public class PageHandler {
 
 	}
 
-	public String stringPNG() {
+	/**
+	 * Returns the PNG file in String format using base64 encoding
+	 * 
+	 * @return
+	 */
+	private static String stringPNG() {
 		try {
 			File file = new File("logo.png");
 			BufferedImage image = ImageIO.read(file);
@@ -430,11 +484,4 @@ public class PageHandler {
 
 		return null;
 	}
-
-	public byte[] getHTML() {
-		String htmlCode = this.stringHTML();
-		byte[] byteHTML = htmlCode.getBytes();
-		return byteHTML;
-	}
-
 }

@@ -1,54 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Wordle</title>
-  <!-link rel="icon" type="image/x-icon" href="icon.png"-->
-  <link rel="stylesheet" href="styles.css">
+  <title>GET Request Example</title>
 </head>
-<body style="background-color:teal;">
-
-  <p style="text-align:center;"> <img src="logo.png" width="404" height="102">
-  </p>
-
-  <p style ="text-align:center">
-
-  <label for="userInput">1st try :</label>
-  <input type="text" id="userInput" readonly>
-
-  <div id="output"></div>
-  <script src="script.js"></script>
-  <div class="keyboard">
-    <button onclick="appendToInput('A')">A</button>
-    <button onclick="appendToInput('Z')">Z</button>
-    <button onclick="appendToInput('E')">E</button>
-    <button onclick="appendToInput('R')">R</button>
-    <button onclick="appendToInput('T')">T</button>
-    <button onclick="appendToInput('Y')">Y</button>
-    <button onclick="appendToInput('U')">U</button>
-    <button onclick="appendToInput('I')">I</button>
-    <button onclick="appendToInput('O')">O</button>
-    <button onclick="appendToInput('P')">P</button>
-    <button onclick="appendToInput('Q')">Q</button>
-    <button onclick="appendToInput('S')">S</button>
-    <button onclick="appendToInput('D')">D</button>
-    <button onclick="appendToInput('F')">F</button>
-    <button onclick="appendToInput('G')">G</button>
-    <button onclick="appendToInput('H')">H</button>
-    <button onclick="appendToInput('J')">J</button>
-    <button onclick="appendToInput('K')">K</button>
-    <button onclick="appendToInput('L')">L</button>
-    <button onclick="appendToInput('M')">M</button>
-    <button onclick="displayText()"> &crarr; </button>
-    <button onclick="appendToInput('W')">W</button>
-    <button onclick="appendToInput('X')">X</button>
-    <button onclick="appendToInput('C')">C</button>
-    <button onclick="appendToInput('V')">V</button>
-    <button onclick="appendToInput('B')">B</button>  
-    <button onclick="appendToInput('N')">N</button>
-    <button onclick="appendToInput('delete')">&lArr;</button>
-  </div>
-
-  </p>
-
+<body>
+  <form action="http://example.com/endpoint" method="get">
+    <label for="param1">Parameter 1:</label>
+    <input type="text" id="param1" name="param1"><br><br>
+    <label for="param2">Parameter 2:</label>
+    <input type="text" id="param2" name="param2"><br><br>
+    <input type="submit" value="Submit">
+  </form>
 </body>
 </html>

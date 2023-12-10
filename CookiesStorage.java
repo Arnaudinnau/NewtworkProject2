@@ -1,5 +1,13 @@
 import java.util.*;
 
+/**
+ * This class manages the association between each game state of a specific game
+ * and its corresponding cookie.
+ * 
+ * @author Arnaud Innaurato, Sophia Donato
+ * @since 2023-12-10
+ */
+
 public class CookiesStorage {
     private Vector<CookieState> cookiesList;
 
@@ -7,15 +15,29 @@ public class CookiesStorage {
         this.cookiesList = new Vector<>();
     }
 
-    public String createCookie(WordleGameState state) {
+    /**
+     * For a given game state, it creates a cookie and store it
+     * 
+     * @param gameState
+     * @return cookie for the game
+     */
+    public String createCookie(WordleGameState gameState) {
         Long randomLong = new Random().nextLong();
         String cookie = "_SessionWordle=" + randomLong.toString();
         synchronized (cookiesList) {
-            cookiesList.add(new CookieState(cookie, state));
+            cookiesList.add(new CookieState(cookie, gameState));
         }
         return cookie;
     }
 
+    /**
+     * Returns a gameState for a given cookie
+     * 
+     * @param cookie
+     * @return gameState
+     * @throws CookiesNotInListException Exception triggered if the cookie is
+     *                                   unknown
+     */
     public WordleGameState getState(String cookie) throws CookiesNotInListException {
         WordleGameState state = null;
         synchronized (cookiesList) {
@@ -30,6 +52,11 @@ public class CookiesStorage {
             throw new CookiesNotInListException();
     }
 
+    /**
+     * Remove a specific cookie from the list
+     * 
+     * @param cookie
+     */
     public void removeSpecificCookie(String cookie) {
         synchronized (cookiesList) {
             for (int i = 0; i < cookiesList.size(); i++) {
@@ -40,6 +67,9 @@ public class CookiesStorage {
         }
     }
 
+    /**
+     * Remove all expired cookies (created more than 10 minutes ago) from the list
+     */
     public void removeExpiredCookie() {
         synchronized (cookiesList) {
             for (int i = 0; i < cookiesList.size(); i++) {
