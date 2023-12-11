@@ -57,7 +57,9 @@ public class WordleGameState {
                     returned = wordleComputePattern(guess.toLowerCase());
                     if (returned.equals("GGGGG") || tries == 6)
                         returned = returned.concat(" GAMEOVER");
-                    wordsTried.add(guess.toUpperCase() + returned);
+                    synchronized (wordsTried) {
+                        wordsTried.add(guess.toUpperCase() + returned);
+                    }
                 }
             }
         } else if (query.equals("QUIT")) {
