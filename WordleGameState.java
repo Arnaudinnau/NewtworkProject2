@@ -49,7 +49,7 @@ public class WordleGameState {
             returned = hiddenWord.toUpperCase();
         } else if (query.startsWith("TRY")) {
             String guess = query.replace("TRY ", "");
-            if (guess.length() == WordLength) {
+            if (guess.length() == WordLength && guess.matches("[A-Z]+")) {
                 if (!listWords.contains(guess.toLowerCase())) {
                     returned = "NONEXISTENT";
                 } else {

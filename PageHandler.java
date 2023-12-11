@@ -257,7 +257,7 @@ public class PageHandler {
 
 				"if(output == 'WRONG'){\n" +
 				"let wrongTry = document.getElementById('wrongTry');\n" +
-				"wrongTry.innerText = 'Guess needs to be 5 letters long';\n" +
+				"wrongTry.innerText = 'Guess needs to be 5 letters long and contain only letters';\n" +
 
 				"wrongTry.style.display = 'block';\n" +
 				"setTimeout(function(){\n" +

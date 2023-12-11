@@ -216,6 +216,7 @@ public class WordleConnection extends Thread {
         writer.println("Content-Type: text/html");
         writer.println("Transfer-Encoding: chunked");
         if (gameState.GetStatus() == GameStatus.TOCLOSE) {
+            System.out.println("Game with cookie " + cookieWordle + " is finished");
             cookiesStorage.removeSpecificCookie(cookieWordle);
             cookieWordle = null;
             writer.println("Set-Cookie: _SessionWordle=deleted; path =/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
@@ -254,6 +255,7 @@ public class WordleConnection extends Thread {
         writer.println("Content-Type: text/plain");
         writer.println("Content-Length: " + answer.length());
         if (gameState.GetStatus() == GameStatus.TOCLOSE) {
+            System.out.println("Game with cookie " + cookieWordle + " is finished");
             cookiesStorage.removeSpecificCookie(cookieWordle);
             cookieWordle = null;
             writer.println("Set-Cookie: _SessionWordle=deleted; path =/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
