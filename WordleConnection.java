@@ -112,6 +112,7 @@ public class WordleConnection extends Thread {
                                         writer.println();
                                     }
                                     String input = new String(buffer);
+                                    System.out.println("input:" + input);
                                     POSTReply(input);
                                 }
                             }

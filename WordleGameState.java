@@ -49,6 +49,7 @@ public class WordleGameState {
             returned = hiddenWord.toUpperCase();
         } else if (query.startsWith("TRY")) {
             String guess = query.replace("TRY ", "");
+            guess = guess.toUpperCase();
             if (guess.length() == WordLength && guess.matches("[A-Z]+")) {
                 if (!listWords.contains(guess.toLowerCase())) {
                     returned = "NONEXISTENT";
@@ -57,9 +58,7 @@ public class WordleGameState {
                     returned = wordleComputePattern(guess.toLowerCase());
                     if (returned.equals("GGGGG") || tries == 6)
                         returned = returned.concat(" GAMEOVER");
-                    synchronized (wordsTried) {
-                        wordsTried.add(guess.toUpperCase() + returned);
-                    }
+                    wordsTried.add(guess.toUpperCase() + returned);
                 }
             }
         } else if (query.equals("QUIT")) {
