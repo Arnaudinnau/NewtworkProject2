@@ -16,7 +16,7 @@ public class CookiesStorage {
     }
 
     /**
-     * For a given game state, it creates a cookie and store it
+     * For a given game state, creates a cookie and stores it
      * 
      * @param gameState
      * @return cookie for the game

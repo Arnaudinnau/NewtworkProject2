@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 
 /**
  * This class contains the HTML, CSS, and JS code.
- * It provides the client with the entire interface to play and send queries to
+ * It provides the entire interface for the client to play and send queries to
  * the server.
  * 
  * @author Arnaud Innaurato, Sophia Donato
@@ -35,7 +35,7 @@ public class PageHandler {
 	}
 
 	/**
-	 * Returns the complete html fil in byte[] format
+	 * Returns the complete html file in byte[] format
 	 * 
 	 * @return
 	 */
@@ -46,7 +46,7 @@ public class PageHandler {
 	}
 
 	/**
-	 * Returns the complete html fil in String format
+	 * Returns the complete html file in String format
 	 * 
 	 * @return
 	 */
@@ -118,10 +118,13 @@ public class PageHandler {
 		// JS AUTHORIZED
 		htmlCode += "<div id=\"js-abled\">\n";
 
-		htmlCode += "<div class=\"wrongTry\" id=\"wrongTry\"></div>\n";
+			//displaying only if NONEXISTENT or WRONG guess
+		htmlCode += "<div class=\"wrongTry\" id=\"wrongTry\"></div>\n"; 
 
+			//displaying when game is over
 		htmlCode += "<div class=\"endGame\" id=\"endGame\"></div>\n";
 
+			//keyboard
 		htmlCode += "<div class=\"keyboard\">\n" +
 				"<button id = letter onclick=\"appendToInput('A')\">A</button>\n" +
 				"<button id = letter onclick=\"appendToInput('Z')\">Z</button>\n" +
@@ -163,6 +166,7 @@ public class PageHandler {
 		htmlCode += "<div id=\"js-disabled\">\n" +
 				"<noscript>\n";
 
+			//form submission possible only when game is not over
 		if (isEmpty || !(gameState.get(nbTries - 1).contains("GAMEOVER"))) {
 			htmlCode += "<form method=\"post\" class=\"form\" enctype=\"text/plain\">\n" +
 					"<label for=\"TRY\">Your guess :</label>\n" +
@@ -171,7 +175,7 @@ public class PageHandler {
 					"<input type=\"submit\" value=\"Submit\">\n" +
 					"</form>\n";
 		}
-
+			//displaying when game is over
 		else {
 			if (gameState.get(nbTries - 1).contains("GGGGG")) {
 				htmlCode += "<div class=\"endGame\" id=\"endGame\" style=\"background-color: #1cdf21; display : block;\">You win !</div>\n";
@@ -203,16 +207,20 @@ public class PageHandler {
 
 				"document.addEventListener('DOMContentLoaded', showDisplay);\n" +
 
+				//showing the correct interface dependanding on whether JS is authorized
 				"function showDisplay(){\n" +
 				"document.getElementById('js-abled').style.display = 'block';\n" +
 				"document.getElementById('js-disabled').style.display = 'none';\n" +
 				"}\n" +
 
+				//filling the guesses with own keyboard
 				"event = document.addEventListener('keydown', keyboardInput);\n" +
 
 				"function keyboardInput(event){\n" +
-				"const start = currentTry*5\n" +
-				"if (event.key.length === 1 && currentBox < start+5 ){\n" +
+				"const start = currentTry*5;\n" +
+				"const range = /[A-Za-z]/;\n" +
+				"const validInput = range.test(event.key);\n"+
+				"if (event.key.length === 1 && currentBox < start+5 && validInput){\n" +
 				"inputBoxes[currentBox].innerText = event.key.toUpperCase();\n" +
 				"currentBox++;\n" +
 				"}\n" +
@@ -224,6 +232,7 @@ public class PageHandler {
 				"}\n" +
 				"}\n" +
 
+				//filling the guesses with screen keyboard
 				"function appendToInput(value){\n" +
 				"const start = currentTry*5;\n" +
 				"if(currentBox < start+5){\n" +
@@ -232,6 +241,7 @@ public class PageHandler {
 				"}\n" +
 				"}\n" +
 
+				//deleting last character
 				"function deleteLastCharacter(){\n" +
 				"const start = currentTry*5\n" +
 				"if(currentBox > start){\n" +
@@ -240,6 +250,7 @@ public class PageHandler {
 				"}\n" +
 				"}\n" +
 
+				//sending an AJAX request and displaying the answer (TRY)
 				"function tryResponse(){\n" +
 				"const start = currentTry*5;\n" +
 				"let input ='';\n" +
@@ -257,7 +268,7 @@ public class PageHandler {
 
 				"if(output == 'WRONG'){\n" +
 				"let wrongTry = document.getElementById('wrongTry');\n" +
-				"wrongTry.innerText = 'Guess needs to be 5 letters long and contain only letters';\n" +
+				"wrongTry.innerText = 'Guess needs to be 5 letters long';\n" +
 
 				"wrongTry.style.display = 'block';\n" +
 				"setTimeout(function(){\n" +
@@ -323,6 +334,7 @@ public class PageHandler {
 				"xhttp.send();\n" +
 				"}\n" +
 
+				//sending a AJAX request and displaying the answer (CHEAT)
 				"function cheatResponse(cheatButton){\n" +
 				"let xhttp = new XMLHttpRequest();\n" +
 				"let output;\n" +
@@ -336,6 +348,7 @@ public class PageHandler {
 				"xhttp.send();\n" +
 				"}\n" +
 
+				//Secret word has to disappear if button 'Cheating' isn't hovered
 				"function resetText(cheatButton){\n" +
 				"cheatButton.innerText = 'Cheating';\n" +
 				"}\n";

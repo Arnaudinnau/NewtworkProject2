@@ -36,7 +36,7 @@ public class CookieState {
     /**
      * Indicated if this cookie has expired
      * 
-     * @return true if the cookie exists for more than 10 minutes, false if not
+     * @return true if the cookie is active for more than 10 minutes, false if not
      */
     public boolean hasExpired() {
         return Duration.between(Instant.now(), creationInstant).toMinutes() > 10;

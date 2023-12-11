@@ -21,7 +21,7 @@ public class WordleGameState {
     private Vector<String> wordsTried;
     private GameStatus status;
     /**
-     * @value 5 WordLength (size of a woordle word)
+     * @value 5 WordLength (size of a wordle word)
      * @value listWords (database of all possible 5 letters words accepted)
      */
     private final static int WordLength = 5;
@@ -49,6 +49,7 @@ public class WordleGameState {
             returned = hiddenWord.toUpperCase();
         } else if (query.startsWith("TRY")) {
             String guess = query.replace("TRY ", "");
+            guess = guess.toUpperCase();
             if (guess.length() == WordLength && guess.matches("[A-Z]+")) {
                 if (!listWords.contains(guess.toLowerCase())) {
                     returned = "NONEXISTENT";
@@ -72,7 +73,7 @@ public class WordleGameState {
      * Method to compute the pattern of a guess given
      * 
      * @param guess String with the correct format and in the database
-     * @return String which contains the pattern computed (Woordle)
+     * @return String which contains the pattern computed (Wordle)
      */
     private String wordleComputePattern(String guess) {
         char[] returned = { 'B', 'B', 'B', 'B', 'B' };

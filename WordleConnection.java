@@ -26,8 +26,8 @@ public class WordleConnection extends Thread {
      * Constructor of the WordleConnection class
      * 
      * @param clientSocket     socket used to communicate to the client
-     * @param cookiesStorage   List of correspondance between cookies and gameState
-     * @param threadIdentifier numero of the thread
+     * @param cookiesStorage   list of correspondance between cookies and gameState
+     * @param threadIdentifier thread number
      */
     public WordleConnection(Socket clientSocket, CookiesStorage cookiesStorage, Integer threadIdentifier) {
         super();
@@ -46,7 +46,7 @@ public class WordleConnection extends Thread {
     }
 
     /**
-     * Method taht read on the incoming request from the client.
+     * Method that reads on the incoming request from the client.
      * It redirects to the right method to deal properly with specific requests and
      * manages the HTTP error codes.
      */
@@ -144,7 +144,7 @@ public class WordleConnection extends Thread {
     }
 
     /**
-     * Deal with GET Request
+     * Deal with GET requests
      * 
      * @param request
      * @throws IOException
@@ -178,7 +178,7 @@ public class WordleConnection extends Thread {
     }
 
     /**
-     * Deal with the POST request
+     * Deal with POST requests
      * 
      * @param payload
      * @throws IOException
