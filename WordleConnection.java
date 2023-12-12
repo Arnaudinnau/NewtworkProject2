@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Arrays;
 
 /**
  * This class is instantiated when a new connection is accepted on the server
@@ -21,6 +22,7 @@ public class WordleConnection extends Thread {
     private CookiesStorage cookiesStorage;
     private String cookieWordle;
     private Integer threadIdentifier;
+    private boolean acceptGzip;
 
     /**
      * Constructor of the WordleConnection class
@@ -35,6 +37,7 @@ public class WordleConnection extends Thread {
         this.cookiesStorage = cookiesStorage;
         this.cookieWordle = null;
         this.threadIdentifier = threadIdentifier;
+        this.acceptGzip = false;
         try {
             this.out = clientSocket.getOutputStream();
             this.in = clientSocket.getInputStream();
@@ -89,6 +92,9 @@ public class WordleConnection extends Thread {
                                 // Content-Length of the payload
                                 if (header.startsWith("Content-Length: "))
                                     contentLength = Integer.parseInt(header.replace("Content-Length: ", ""));
+                                // Accept-Encoding field
+                                if (header.startsWith("Accept-Encoding: ") && header.contains("gzip"))
+                                    this.acceptGzip = true;
 
                             }
 
@@ -210,11 +216,12 @@ public class WordleConnection extends Thread {
             writer.println("HTTP/1.1 404 Not Found");
             writer.println();
         }
-        byte[] data = gameState.getData(path);
+        byte[] data = gameState.getData(path, acceptGzip);
 
         writer.println("HTTP/1.1 200 OK");
-        writer.println("Content-Type: text/html");
+        writer.println("Content-Type: text/html; charset = utf-8");
         writer.println("Transfer-Encoding: chunked");
+
         if (gameState.GetStatus() == GameStatus.TOCLOSE) {
             System.out.println("Game with cookie " + cookieWordle + " is finished");
             cookiesStorage.removeSpecificCookie(cookieWordle);
@@ -222,18 +229,36 @@ public class WordleConnection extends Thread {
             writer.println("Set-Cookie: _SessionWordle=deleted; path =/; expires=Thu, 01 Jan 1970 00:00:00 GMT");
         } else
             writer.println("Set-Cookie: " + cookieWordle);
+
         writer.println("Connection: close");
 
-        writer.println(); // Empty line to indicate the end of headers
-        int chunkSize = 128; // Maximum ChunckSize
-        for (int i = 0; i < data.length; i += chunkSize) {
-            Integer chunkLength = Math.min(chunkSize, data.length - i);
-            writer.println(Integer.toHexString(chunkLength));
-            writer.println(new String(data, i, chunkLength));
+        if (acceptGzip == false) { // Gzip is not accepted
+            writer.println(); // Empty line to indicate the end of headers
+            int chunkSize = 128; // Maximum ChunckSize
+            for (int i = 0; i < data.length; i += chunkSize) {
+                Integer chunkLength = Math.min(chunkSize, data.length - i);
+                writer.println(Integer.toHexString(chunkLength));
+                writer.println(new String(data, i, chunkLength));
+            }
 
+            writer.println("0");
+            writer.println();
         }
-        writer.println("0");
-        writer.println();
+
+        if (acceptGzip == true) {
+            writer.println("Content-Encoding : gzip");
+            writer.println(); // Empty line to indicate the end of headers
+            int chunkSize = 128; // Maximum ChunckSize
+            for (int i = 0; i < data.length; i += chunkSize) {
+                Integer chunkLength = Math.min(chunkSize, data.length - i);
+                out.write(Integer.toHexString(chunkLength).getBytes());
+                out.write("\r\n".getBytes());
+                out.write(Arrays.copyOfRange(data, i, i + chunkLength));
+                out.write("\r\n".getBytes());
+            }
+            // write the last chunk with size 0 to signal the end
+            out.write("0\r\n\r\n".getBytes());
+        }
     }
 
     /**

@@ -1,3 +1,5 @@
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -107,10 +109,13 @@ public class WordleGameState {
      * @param path
      * @return complete html file
      */
-    public byte[] getData(String path) {
+    public byte[] getData(String path, boolean acceptGzip) throws IOException {
         PageHandler pageHandler = new PageHandler(wordsTried);
         if (path.contains("html"))
-            return pageHandler.getHTML();
+            if (acceptGzip)
+                return pageHandler.getCompressedHTML();
+            else
+                return pageHandler.getHTML();
         return null;
     }
 
